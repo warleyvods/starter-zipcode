@@ -1,0 +1,50 @@
+plugins {
+    id 'java'
+    id 'maven-publish'
+    id 'java-library'
+}
+
+group 'com.wavods'
+version '0.0.1'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+bootJar {
+    archiveFileName = 'starter-zipcode.jar'
+}
+
+jacoco {
+    toolVersion = "0.8.8"
+}
+
+publishing {
+    publications {
+
+        maven(MavenPublication) {
+            artifact("build/libs/pessoa.jar") {
+                extension 'jar'
+            }
+        }
+    }
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = "https://maven.pkg.github.com/warleyvods/pessoa-microservice"
+            credentials {
+                username = System.getenv("GIT_LOGIN")
+                password = System.getenv("GIT_TOKEN")
+            }
+        }
+    }
+}
