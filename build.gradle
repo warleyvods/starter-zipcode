@@ -2,26 +2,61 @@ plugins {
     id 'java'
     id 'maven-publish'
     id 'java-library'
+    id 'jacoco'
+    id 'org.springframework.boot' version '2.6.6'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 }
 
 group 'com.wavods'
 version '0.0.1'
 
+sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = JavaVersion.VERSION_11
+
 repositories {
     mavenCentral()
 }
 
+configurations {
+    providedRuntime
+}
+
+ext {
+    set('springCloudVersion', '2021.0.1')
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    }
+}
+
+jacoco {
+    toolVersion = "0.8.5"
+}
+
 dependencies {
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+    implementation('org.springframework.boot:spring-boot-starter-web') {
+        exclude module: 'spring-boot-starter-tomcat'
+    }
+    implementation 'org.springframework.boot:spring-boot'
+    implementation 'org.springframework.boot:spring-boot-autoconfigure'
+    implementation 'org.springframework.boot:spring-boot-configuration-processor'
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+    implementation 'org.projectlombok:lombok'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.13.4'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.13.4'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.4.2'
+
+    annotationProcessor('org.projectlombok:lombok')
+    annotationProcessor('org.springframework.boot:spring-boot-configuration-processor')
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.0'
 }
 
 test {
     useJUnitPlatform()
-}
-
-bootJar {
-    archiveFileName = 'starter-zipcode.jar'
 }
 
 jacoco {
@@ -30,21 +65,32 @@ jacoco {
 
 publishing {
     publications {
+        mavenJava(MavenPublication) {
+            artifactId "starter-zipcode"
+            version version
+            groupId group
 
-        maven(MavenPublication) {
-            artifact("build/libs/pessoa.jar") {
-                extension 'jar'
-            }
+            from components.java
         }
     }
     repositories {
         maven {
             name = "GitHubPackages"
-            url = "https://maven.pkg.github.com/warleyvods/pessoa-microservice"
+            url = "https://maven.pkg.github.com/warleyvods/starter-zipcode"
             credentials {
                 username = System.getenv("GIT_LOGIN")
                 password = System.getenv("GIT_TOKEN")
             }
         }
     }
+}
+
+bootJar {
+    enabled = false
+}
+
+jar {
+    enabled = true
+    from sourceSets.main.output
+    from sourceSets.main.allJava
 }
